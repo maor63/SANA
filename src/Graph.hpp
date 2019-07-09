@@ -19,7 +19,6 @@
 #include <fstream>
 #include <time.h>
 #include <cassert>
-#include <iterator>
 #include "utils/utils.hpp"
 #include "utils/Timer.hpp"
 #include "computeGraphlets.hpp"
@@ -36,18 +35,12 @@ public:
     static const int NODE_TYPE_MIRNA; // = 2;
 
     void setMaxGraphletSize(double number);
-    static Graph& loadGraph(string name, Graph& g);
-    static Graph& loadGraphFromPath(string path, string name, Graph& g, bool nodesHaveTypes = false);
-    static Graph& multGraph(string name, uint path, Graph& g);
+    static Graph loadGraph(string name);
+    static Graph loadGraphFromPath(string path, string name, bool nodesHaveTypes = false);
+    static Graph multGraph(string name, uint path);
 
     static void loadFromEdgeListFile(string fin, string graphName, Graph& g, bool nodesHaveTypes = false);
-    static void loadFromLedaFile(string fin, string graphName, Graph& g, bool nodesHaveTypes = false);
-    static void loadFromLgfFile(string fin, string graphName, Graph& g, bool nodesHaveTypes = false);
-    static void loadFromGmlFile(string fin, string graphName, Graph& g, bool nodesHaveTypes = false);
-    static void loadFromGraphmlFile(string fin, string graphName, Graph& g, bool nodesHaveTypes = false);
-    static void loadFromCsvFile(string fin, string graphName, Graph& g, bool nodesHaveTypes = false);
-
-
+	
     static void loadGraphFromBinary(Graph& g, string graphName, string lockFile, bool nodesHaveTypes, bool lockedSameName);
     static void serializeGraph(Graph& G, string outputName, bool typedNodes, bool locked);
     void serializeShadow(Graph& G);
@@ -72,7 +65,7 @@ public:
     string getName() const;
 
     uint getNumNodes() const;
-#ifdef MULTI_PAIRWISE
+#ifdef WEIGHTED
     uint getWeightedNumEdges();
 #endif
     uint getNumEdges() const;
@@ -82,12 +75,7 @@ public:
 #ifndef NO_ADJ_MATRIX
     void getMatrix(Matrix<MATRIX_UNIT>& matrix) const;
     void setMatrix(Matrix<MATRIX_UNIT>& matrix);
-    // TODO: make const
-    Matrix<MATRIX_UNIT>& getMatrix();
 #endif
-
-    const vector<vector<uint>>& getAdjLists() const;
-    const vector<vector<uint>>& getEdgeList() const;
 
     void getAdjLists(vector<vector<uint> >& adjListsCopy) const;
     void getEdgeList(vector<vector<uint> > & edgeListCopy) const;
@@ -109,7 +97,6 @@ public:
     uint numNodeInducedSubgraphEdges(const vector<uint>& subgraphNodes) const;
 
     vector<uint> numEdgesAround(uint node, uint maxDist) const;
-    vector<uint> getAllNodesAround(uint node, uint maxDist) const;
     vector<uint> numNodesAround(uint node, uint maxDist) const;
 
     void printStats(int numConnectedComponentsToPrint, ostream& stream) const;
@@ -129,8 +116,6 @@ public:
 
     unordered_map<string,uint> getNodeNameToIndexMap() const;
     unordered_map<uint,string> getIndexToNodeNameMap() const;
-
-    bool hasSelfLoop(uint source) const;
 
     void getDistanceMatrix(vector<vector<short> >& dist) const;
 
@@ -178,12 +163,7 @@ public:
     vector<uint> miRNAIndexList;
     void removeEdge(uint node1, uint node2);
 
-    // TODO: make const
-    Matrix<float>& getFloatWeights() ;
-    bool hasFloatWeight() const;
 private:
-    bool parseFloatWeight = false;
-    Matrix<float> floatWeights;
     double maxGraphletSize = 4; //default is 4, 5 is too big
     string name;
     string path;
@@ -228,9 +208,10 @@ private:
     void serialize(Archive& archive)
     {
         archive(CEREAL_NVP(adjLists), CEREAL_NVP(matrix), CEREAL_NVP(edgeList), CEREAL_NVP(lockedList),
-                CEREAL_NVP(lockedTo), CEREAL_NVP(nodeTypes), CEREAL_NVP(miRNACount), CEREAL_NVP(geneCount),
-                CEREAL_NVP(connectedComponents), CEREAL_NVP(unlockedGeneCount), CEREAL_NVP(unlockedmiRNACount),
+                CEREAL_NVP(lockedTo), CEREAL_NVP(nodeTypes), CEREAL_NVP(miRNACount), CEREAL_NVP(geneCount), 
+                CEREAL_NVP(connectedComponents), CEREAL_NVP(unlockedGeneCount), CEREAL_NVP(unlockedmiRNACount), 
                 CEREAL_NVP(lockedCount), CEREAL_NVP(geneIndexList), CEREAL_NVP(miRNAIndexList), CEREAL_NVP(nodeNameToIndexMap));
     }
 };
+
 #endif

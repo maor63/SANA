@@ -12,29 +12,29 @@ GraphletCosine::GraphletCosine(Graph* G1, Graph* G2) : LocalMeasure(G1, G2, "gra
 GraphletCosine::~GraphletCosine() {
 }
 
-double GraphletCosine::magnitude(vector<uint> vector) {
+double magnitude(vector<uint> vector) {
     double res = 0;
     for(uint i = 0; i < vector.size(); ++i) {
-        res += vector[i] * static_cast<double>(vector[i]);
+        res += vector[i] * vector[i];
     }
 
     return sqrt(res);
 }
 
-double GraphletCosine::dot(vector<uint> v1, vector<uint> v2) {
+double dot(vector<uint> v1, vector<uint> v2) {
     double res = 0;
     for(uint i = 0; i < v1.size(); ++i) {
-        res += v1[i] * static_cast<double>(v2[i]);
+        res += v1[i] * v2[i];
     }
 
     return res;
 }
 
-double GraphletCosine::cosineSimilarity(vector<uint> v1, vector<uint> v2) {
+double cosineSimilarity(vector<uint> v1, vector<uint> v2) {
     return dot(v1, v2) / (magnitude(v1) * magnitude(v2));
 }
 
-vector<uint> GraphletCosine::reduce(vector<uint> v) {
+vector<uint> reduce(vector<uint> v) {
     vector<uint> res(11);
     res[0] = v[0];
     res[1] = v[1];

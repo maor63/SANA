@@ -3,7 +3,6 @@
 #include <vector>
 #include <map>
 #include <ostream>
-#include "stdiobuf.hpp"
 using namespace std;
 
 /*
@@ -47,8 +46,6 @@ const string currentDateTime();
 
 void normalizeWeights(vector<double>& weights);
 
-FILE* decompressFile(const string& decompProg, const string& fileName);
-
 vector<string> fileToStrings(const string& fileName, bool asLines = false);
 vector<vector<string> > fileToStringsByLines(const string& fileName);
 void memExactFileParseByLine(vector<vector<string> >& result, const string& fileName);
@@ -60,12 +57,6 @@ string intToString(int n);
 bool fileExists(const string& filename);
 void checkFileExists(const string& filename);
 void addUniquePostfixToFilename(string& name, const string& extension);
-
-stdiobuf readFileAsStreamBuffer(const string& fileName);
-FILE* readFileAsFilePointer(const string& fileName, bool& piped);
-void closeFile(FILE* fp, const bool& isPiped);
-string getDecompressionProgram(const string& fileName);
-string getUncompressedFileExtension(const string& fileName);
 
 bool folderExists(string folderName);
 void createFolder(string folderName);
@@ -79,7 +70,6 @@ void deleteFile(string name);
 void writeDataToFile(const vector<vector<string> >& data, string fileName, bool useTabs = false);
 
 extern bool interrupt;
-extern bool saveAlignment;
 void sigIntHandler(int s);
 
 uint factorial(uint n);

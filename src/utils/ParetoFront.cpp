@@ -283,10 +283,10 @@ bool ParetoFront::paretoPropertyViolated()
             }
             if(j == numberOfMeasures) {
                 cout << "Pareto front property violated:\n";
-                for(uint i = 0; i < numberOfMeasures; i++)
+                for(int i = 0; i < numberOfMeasures; i++)
                     cout << validate->second[i] << "  ";
                 cout << '\n';
-                for(uint i = 0; i < numberOfMeasures; i++)
+                for(int i = 0; i < numberOfMeasures; i++)
                     cout << against->second[i] << "  ";
                 cout << endl;
                 return true;

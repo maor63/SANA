@@ -25,8 +25,7 @@ int main(int argc, char* argv[]) {
     ArgumentParser args(stringArgs, doubleArgs, boolArgs, doubleVectorArgs, stringVectorArgs);
     args.parseArgs(argc, argv, defaultArguments, true);
 
-    // Assign scheduleOnly, only to shut the fucking compiler up about igoring return value from system
-    scheduleOnly = (bool)system("hostname -f; date");
+    system("hostname -f; date");
 
     args.writeArguments();
 

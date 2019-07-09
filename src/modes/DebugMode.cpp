@@ -89,15 +89,15 @@ void DebugMode::run(ArgumentParser& args) {
   //   MeasureCombination M;
   //   initMeasures(M, G1, G2, args);
   //   Method* method = initMethod(G1, G2, args, M);
-  //   double x = ((SANA*) method)->logOfSearchSpaceSize();
+  //   double x = ((SANA*) method)->searchSpaceSizeLog();
   //   double y = ((SANA*) method)->hillClimbingIterations();
   //   cout << networks[i][0] << "\t" << networks[i][1] << "\t" << to_string(x) << "\t" << to_string(y) << endl;
   // }
   MeasureCombination M;
   initMeasures(M, G1, G2, args);
   Method* method = initMethod(G1, G2, args, M);
-  ((SANA*) method)->setTInitialAndTFinalByLinearRegression();
-    ((SANA*) method)->setTDecayFromTempRange();
+  ((SANA*) method)->searchTemperaturesByLinearRegression();
+    ((SANA*) method)->setTDecayAutomatically();
 }
 
 std::string DebugMode::getName(void) {

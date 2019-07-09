@@ -21,8 +21,6 @@
 #include "../measures/localMeasures/Graphlet.hpp"
 #include "../measures/localMeasures/GraphletLGraal.hpp"
 #include "../measures/localMeasures/GraphletCosine.hpp"
-#include "../measures/localMeasures/GraphletNorm.hpp"
-
 #include "../Alignment.hpp"
 #include "../utils/Timer.hpp"
 #include "ClusterMode.hpp"
@@ -194,7 +192,7 @@ void Experiment::loadGraphs(map<string, Graph>& graphs) {
     for (auto pair : networkPairs) {
         for (string graphName : pair) {
             if (graphs.count(graphName) == 0) {
-                Graph::loadGraph(graphName, graphs[graphName]);
+                graphs[graphName] = Graph::loadGraph(graphName);
             }
         }
     }
@@ -536,11 +534,8 @@ Measure* Experiment::loadMeasure(Graph* G1, Graph* G2, string name) {
     if (name == "graphletlgraal") {
         return new GraphletLGraal(G1, G2);
     }
-    if (name == "graphletcosine") {
+    if (name == "graphletcoseine") {
         return new GraphletCosine(G1, G2);
-    }
-    if (name == "graphletnorm") {
-        return new GraphletNorm(G1, G2);
     }
     if (name == "wecgraphletlgraal") {
         LocalMeasure* wecNodeSim = new GraphletLGraal(G1, G2);

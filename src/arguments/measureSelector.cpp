@@ -4,9 +4,9 @@
 #include "measureSelector.hpp"
 
 #include "../measures/EdgeCorrectness.hpp"
-#include "../measures/EdgeDifference.hpp"
 #include "../measures/InducedConservedStructure.hpp"
 #include "../measures/SymmetricSubstructureScore.hpp"
+#include "../measures/WeightedAccuracy.hpp"
 #include "../measures/SymmetricEdgeCoverage.hpp"
 #include "../measures/LargestCommonConnectedSubgraph.hpp"
 #include "../measures/GoAverage.hpp"
@@ -18,8 +18,7 @@
 #include "../measures/ExternalWeightedEdgeConservation.hpp"
 #include "../measures/SquaredEdgeScore.hpp"
 #include "../measures/TriangleCorrectness.hpp"
-#include "../measures/EdgeExposure.hpp"
-#include "../measures/MultiS3.hpp"
+
 #include "../measures/localMeasures/NodeCount.hpp"
 #include "../measures/localMeasures/NodeDensity.hpp"
 #include "../measures/localMeasures/EdgeCount.hpp"
@@ -31,7 +30,6 @@
 #include "../measures/localMeasures/Graphlet.hpp"
 #include "../measures/localMeasures/GraphletLGraal.hpp"
 #include "../measures/localMeasures/GraphletCosine.hpp"
-#include "../measures/localMeasures/GraphletNorm.hpp"
 
 using namespace std;
 
@@ -100,11 +98,11 @@ double getAlpha(Graph& G1, Graph& G2, ArgumentParser& args) {
 
 double totalGenericWeight(ArgumentParser& args) {
     vector<string> optimizableDoubleMeasures = {
-        "ec","ed", "s3","ics","tc","sec","wec","nodec","noded","edgec","edged", "go","importance",
-        "sequence","graphlet","graphletlgraal", "graphletcosine", "graphletnorm", "spc", "nc","mec", "ewec", "ses", "ee", "ms3"
+        "ec","s3","wacc","ics","tc","sec","wec","nodec","noded","edgec","edged", "go","importance",
+        "sequence","graphlet","graphletlgraal", "graphletcosine", "spc", "nc","mec", "ewec", "ses"
     };
     double total = 0;
-    for (uint i = 0; i < optimizableDoubleMeasures.size(); i++)
+    for (uint i = 0; i < optimizableDoubleMeasures.size(); i++) 
         total += args.doubles["-"+optimizableDoubleMeasures[i]];
 
     vector<string> optimizableDoubleVectorsMeasures = {
@@ -133,7 +131,7 @@ double getWeight(string measureName, Graph& G1, Graph& G2, ArgumentParser& args,
         return weight/totalGenericWeight(args);
     } else if (objFunType == "alpha" or objFunType == "beta") {
         double alpha = getAlpha(G1, G2, args);
-
+        
         string topMeasure;
         if (method == "sana" or method == "tabu") {
             topMeasure = args.strings["-topomeasure"];
@@ -180,20 +178,16 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
 
     //detailedReport; if false, init only basic measures and any measure necessary to run SANA
     bool detRep = args.bools["-detailedreport"];
-
+    
     bool pareto = (args.strings["-mode"] == "pareto") ? true : false;
     if(pareto) {
         M.setParetoInitial(args.doubles["-paretoInitial"]);
         M.setParetoCapacity(args.doubles["-paretoCapacity"]);
 	M.setParetoIterations(args.doubles["-paretoIterations"]);
-        M.setParetoThreads(args.strings["-paretoThreads"]);
     }
 
     m = new EdgeCorrectness(&G1, &G2);
     M.addMeasure(m, getWeight("ec", G1, G2, args));
-
-    m = new EdgeDifference(&G1, &G2);
-    M.addMeasure(m, getWeight("ed", G1, G2, args));
 
     m = new InducedConservedStructure(&G1, &G2);
     M.addMeasure(m, getWeight("ics", G1, G2, args));
@@ -204,17 +198,21 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
     m = new SquaredEdgeScore(&G1, &G2);
     M.addMeasure(m, getWeight("ses", G1, G2, args));
 
-	m = new EdgeExposure(&G1, &G2);
-    M.addMeasure(m, getWeight("ee", G1, G2, args));
-    
-    m = new MultiS3(&G1, &G2);
-    M.addMeasure(m, getWeight("ms3", G1, G2, args));
-
     m = new InducedConservedStructure(&G1, &G2);
     M.addMeasure(m);
 
     m = new SymmetricSubstructureScore(&G1, &G2);
     M.addMeasure(m, getWeight("s3", G1, G2, args));
+    
+//    try{
+        m = new WeightedAccuracy(&G1, &G2);
+        double alpha = getWeight("waccAlpha", G1, G2, args);
+        cout << "alpha " << alpha << endl;
+        ((WeightedAccuracy*)m)->setAlpha(alpha);
+        M.addMeasure(m, getWeight("wacc", G1, G2, args));
+//    }catch(...){
+//        
+//    }
 
     m = new LargestCommonConnectedSubgraph(&G1, &G2);
     M.addMeasure(m);
@@ -226,7 +224,7 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
         m = new TriangleCorrectness(&G1, &G2);
         M.addMeasure(m, getWeight("tc", G1, G2, args));
     }
-
+    
     //local measures must be initialized before wec,
     //as wec uses one of the local measures
 
@@ -328,13 +326,8 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
         double graphletWeight = getWeight("graphletcosine", G1, G2, args);
         M.addMeasure(m, graphletWeight);
     }
-    if (shouldInit("graphletnorm", G1, G2, args)) {
-        m = new GraphletNorm(&G1, &G2);
-        double graphletWeight = getWeight("graphletnorm", G1, G2, args);
-        M.addMeasure(m, graphletWeight);
-    }
 
-    double wecWeight = getWeight("wec", G1, G2, args);
+    double wecWeight = getWeight("wec", G1, G2, args);    
     if (detRep or wecWeight > 0) {
         LocalMeasure* nodeSim = (LocalMeasure*) M.getMeasure(args.strings["-wecnodesim"]);
         m = new WeightedEdgeConservation(&G1, &G2, nodeSim);
@@ -345,13 +338,13 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
         vector<string> edges = fileToStrings(args.strings["-truealignment"]);
         double ncWeight = 0;
         try{
-            ncWeight = getWeight("nc", G1, G2, args);
+            ncWeight = getWeight("nc", G1, G2, args);    
         }
         catch(...){
         }
         m = new NodeCorrectness(NodeCorrectness::convertAlign(G1, G2, edges));
         M.addMeasure(m, ncWeight);
-    }
+    } 
     else if (G1.sameNodeNames(G2)) {
         Alignment a(Alignment::correctMapping(G1,G2));
         vector<uint> mapping = a.getMapping();
@@ -361,7 +354,7 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
             ncWeight = getWeight("nc", G1, G2, args);
         }
         catch(...){
-        }
+        }    
         m = new NodeCorrectness(mapping);
         M.addMeasure(m, ncWeight);
     }
@@ -371,7 +364,7 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
         double spcWeight = getWeight("spc", G1, G2, args);
         M.addMeasure(m, spcWeight);
     }
-
+    
     if (args.strings["-balance"] != ""){
         M.rebalanceWeight(args.strings["-balance"]);
     }else if (args.bools["-balance-all"]){
@@ -380,7 +373,7 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
 
     //not necessary, as getWeight returns normalized weight:
     // M.normalize();
-
+    
     cout << "done (" << T.elapsedString() << ")" << endl;
 
     cout << "=== optimize: ===" << endl;

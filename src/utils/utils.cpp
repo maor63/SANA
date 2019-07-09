@@ -161,9 +161,20 @@ void normalizeWeights(vector<double>& weights) {
 
 vector<string> fileToStrings(const string& fileName, bool asLines) {
     checkFileExists(fileName);
-    char buf[10240];
-    bool isPiped;
-    FILE *fp = readFileAsFilePointer(fileName, isPiped);
+    uint fileNameLen = fileName.size();
+    FILE *fp;
+    char buf[10240], pipe = 0;
+    if(fileNameLen>=3 && fileName.substr(fileNameLen-3,3) == ".gz"){
+    pipe=1;
+    cerr << "fileToStrings: decompressing using gunzip: " << fileName << endl;
+    string unzip_cmd = "gunzip < " + fileName;
+    fp = popen(unzip_cmd.c_str(), "r");
+    } else if(fileNameLen>=3 && fileName.substr(fileNameLen-3,3) == ".xz"){
+    pipe=1;
+    cerr << "fileToStrings: decompressing using xzcat: " << fileName << endl;
+    string unzip_cmd = "xzcat < " + fileName;
+    fp = popen(unzip_cmd.c_str(), "r");
+    } else fp=fopen(fileName.c_str(),"r");
     vector<string> result;
     if(asLines) {
         while (fgets(buf, sizeof(buf), fp)){string line(buf); result.push_back(line);}
@@ -171,61 +182,9 @@ vector<string> fileToStrings(const string& fileName, bool asLines) {
     else {
         while (fscanf(fp, "%s", buf)>0){string word(buf); result.push_back(word);}
     }
-    closeFile(fp, isPiped);
-    return result;
-}
-
-void closeFile(FILE* fp, const bool& isPiped)
-{
-    if(isPiped)
-        pclose(fp);
+    if(pipe) pclose(fp);
     else fclose(fp);
-}
-stdiobuf readFileAsStreamBuffer(const string& fileName) {
-    bool piped = false;
-    FILE* f = readFileAsFilePointer(fileName, piped);
-    return stdiobuf(f, piped);
-}
-FILE* readFileAsFilePointer(const string& fileName, bool& piped) {
-    FILE* fp;
-    string decompressionProg = getDecompressionProgram(fileName);
-    piped = false;
-    if(decompressionProg != "")
-    {
-        fp = decompressFile(decompressionProg, fileName);
-        piped = true;
-    }
-    else fp = fopen(fileName.c_str(), "r");
-    return fp;
-}
-
-string getDecompressionProgram(const string& fileName) {
-    string ext = fileName.substr(fileName.find_last_of(".") + 1);
-    if(ext == "gz")
-        return "gunzip";
-    else if(ext == "xz")
-        return "xzcat";
-    else if(ext == "bz2")
-        return "bzip2 -dk";
-    return "";
-}
-string getUncompressedFileExtension(const string& fileName)
-{
-    if(getDecompressionProgram(fileName) != "")
-    {
-        string noCompressionExt = extractFileNameNoExtension(fileName);
-        return noCompressionExt.substr(noCompressionExt.find_last_of(".") + 1);
-    }
-    return "";
-}
-
-FILE* decompressFile(const string& decompProg, const string& fileName) {
-    stringstream stream;
-    string command;
-    cerr << "decompressFile: decompressing using " << decompProg << ": " << fileName << endl;
-    stream << decompProg << " < " << fileName;
-    command = stream.str(); // eg "gunzip < filename.gz"
-    return popen(command.c_str(), "r");
+    return result;
 }
 
 vector<vector<string> > fileToStringsByLines(const string& fileName) {
@@ -246,8 +205,7 @@ vector<vector<string> > fileToStringsByLines(const string& fileName) {
 
 void memExactFileParseByLine(vector<vector<string> >& result, const string& fileName) {
     checkFileExists(fileName);
-    stdiobuf sbuf = readFileAsStreamBuffer(fileName);
-    istream ifs(&sbuf);
+    ifstream ifs(fileName.c_str());
     string line;
     while (getline(ifs, line)) {
         istringstream iss(line);
@@ -256,6 +214,7 @@ void memExactFileParseByLine(vector<vector<string> >& result, const string& file
         copy(istream_iterator<string>(iss), istream_iterator<string>(), back_inserter(words));
         result.push_back(words);
     }
+    ifs.close();
 }
 
 string extractDecimals(double value, int count) {
@@ -346,34 +305,14 @@ void writeDataToFile(const vector<vector<string> >& data, string fileName, bool 
     }
     outfile.close();
 }
-//exit, save alignment and exit, save alignment and continue
+
 bool interrupt;
-bool saveAlignment;
 void sigIntHandler(int s) {
-    string line;
-    int c = -1;
-    do {
-        cerr << "Select an option (0 - 3):\n  (0) Do nothing and continue\n  (1) Exit\n  (2) Save Alignment and Exit\n  (3) Save Alignment and Continue\n>> ";
-        cin >> c;
-        
-        if(cin.eof()) {
-            exit(0);
-        }
-        else if(cin.fail()) {
-            c = -1;
-            cin.clear();
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        }
-        
-        if(c == 0)
-            cerr << "Continuing..." << endl;
-        else if(c == 1)
-            exit(0);
-        else if(c == 2)
-            interrupt = true;
-        else if(c == 3)
-            saveAlignment = true;
-    } while(c < 0 || c > 3);    
+    interrupt = true;
+    cerr << "Save alignment? (y/n)" << endl << ">> ";
+    char c;
+    cin >> c;
+    if (c != 'y' and c != 'Y') exit(0);
 }
 
 uint factorial(uint n) {
@@ -441,6 +380,7 @@ string extractFileName(string s) {
     int pos = s.size()-1;
     while (pos >= 0 and s[pos] != '/') pos--;
     s = s.substr(pos+1);
+    //remove suffix starting with '.'
     return s;
 }
 
@@ -448,11 +388,8 @@ string extractFileName(string s) {
 string extractFileNameNoExtension(string s) {
     s = extractFileName(s);
     //remove suffix starting with '.'
-    int pos = s.size() - 1;
-    while (pos >= 0 and s[pos] != '.') pos--; //gives position of last "."
-    string suffix = s.substr(pos + 1);
-    //i've temporarily disabled this to make graph loading compatible with compressed files
-    //if (suffix != "el" and suffix != "elw" and suffix != "gw") throw runtime_error("files must be of type el, elw or gw"); //terminate SANA if invalid file types used
+    uint pos = 0;
+    while (pos < s.size() and s[pos] != '.') pos++;
     s = s.substr(0, pos);
     return s;
 }

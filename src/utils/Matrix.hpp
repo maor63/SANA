@@ -6,19 +6,18 @@
 #include <vector>
 
 using namespace std;
-typedef unsigned char uchar;
 
-#ifdef MULTI_PAIRWISE
-    #define MATRIX_UNIT uchar // uchar allows 255 networks, ushort allows up to 65535 of them
+#ifdef WEIGHTED
+    #define MATRIX_UNIT ushort
 #else
     #define MATRIX_UNIT bool
 #endif
-
+    
 #ifdef SPARSE
-    #define INNER_CONTAINER unordered_map<uint, T>
+    #define INNER_CONTAINER unordered_map<uint, T> 
     #define MATRIX_DATA_STRUCTURE SparseMatrix<T>
 #else
-    #define INNER_CONTAINER vector<T>
+    #define INNER_CONTAINER vector<T> 
     #define MATRIX_DATA_STRUCTURE vector<vector<T> >
 #endif
 
@@ -56,7 +55,7 @@ Matrix<T>::Matrix(uint row, uint col) {
 #ifdef SPARSE
     data = MATRIX_DATA_STRUCTURE(row);
 #else
-    data = MATRIX_DATA_STRUCTURE(row,
+    data = MATRIX_DATA_STRUCTURE(row, 
            vector<T>(col, T()));
 #endif
 }
@@ -84,9 +83,9 @@ Matrix<T>::Matrix(uint numberOfNodes) {
 #ifdef SPARSE
     data = MATRIX_DATA_STRUCTURE(numberOfNodes);
 #else
-    data = MATRIX_DATA_STRUCTURE(numberOfNodes,
+    data = MATRIX_DATA_STRUCTURE(numberOfNodes, 
            vector<T>(numberOfNodes, T()));
-#endif
+#endif        
 }
 
 template <typename T>

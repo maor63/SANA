@@ -33,8 +33,8 @@ vector<array<string, 6>> supportedArguments = {
     { "-eval", "string", "", "Evaluate Existing Alignment", "Takes an existing alignment, evaluates it, and records the results to sana.out or the specified output file.", "1" },
     { "-startalignment", "string", "", "Starting Alignment", "File containing the starting alignment (in the format outputted by SANA). Some methods allow this option, while the rest start with random alignments.", "1" },
     { "-truealignment", "string", "", "True Alignment", "Alignment file containing the \"true\" alignment. This is used to evaluate the NC measure. In its absence, NC assumes that the true alignment is the identity (the node with index i in G1 is mapped to the node with index i in G2). In any case, NC is expressed as the fraction of nodes in the smaller network aligned correctly.", "0" },
-    { "-rewire1", "double", "0", "Add rewiring noise to G1", "If set greater than 0, the corresponding fraction of edges in G1 is randomly rewired.", "0" },
-    { "-rewire2", "double", "0", "Add rewiring noise to G2", "If set greater than 0, the corresponding fraction of edges in G2 is randomly rewired.", "0" },
+    { "-waccAlpha", "double", "", "Weighted Accuracy Alpha", "Weighted Accuracy Alpha", "0" },
+    { "-rewire", "double", "0", "Add rewiring noise to G2", "If set greater than 0, the corresponding fraction of edges in G2 is randomly rewired.", "0" },
     { "End General Options", "", "banner", "", "", "0" },
     //---------------------------------END GENERAL---------------------------------------
 
@@ -99,12 +99,10 @@ vector<array<string, 6>> supportedArguments = {
     { "-beta", "double", "0", "Like -alpha, but values are normalized first.", "Same as alpha but with topological and biological scores balanced according to size. Range: [0, 1]. Used when \"-objfuntype\" is \"beta\".", "1" },
     { "-ics", "double", "0", "Weight of ICS", "The weight of the Induced Conserved Structure in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-ec", "double", "0", "Weight of EC", "The weight of the Edge Coverage (aka Edge Conservation or Edge Correctness) in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
-    { "-ed", "double", "0", "Weight of ED", "The weight of the Edge Difference in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-mec", "double", "0", "Weight of MEC", "The weight of the Multiple Edge Coverage in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-ses", "double", "0", "Weight of SES", "The weight of the Squared Edge Score in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
-	{ "-ee", "double", "0", "Weight of EE", "The weight of the Edge Exposure Score in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
-    { "-ms3", "double", "0", "Weight of MS3", "The weight of the Multi Symmetric Substructer Score in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-s3", "double", "1", "Weight of S3", "The weight of the Symmetric Substructer Score in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
+    { "-wacc", "double", "0", "Weight of WAcc", "The weight of the Weighted Accuracy in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-nc", "double", "0", "Weight of NC", "This weight of Node Correctness in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-tc", "double", "0", "Weight of TC", "The weight of Triangle Correctness in the objetive function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-wec", "double", "0", "Weight of WEC.", "Weight of the weighted edge coverage. To be used when \"-objfuntype\" is \"generic\". If non-zero, must specify how to weigh the edge using -wecnodesim.", "1" },
@@ -114,13 +112,11 @@ vector<array<string, 6>> supportedArguments = {
     { "-noded", "double", "0", "Weight of Node Density", "The weight of the Local Node Density objective function. Used when \"-objfuntype\" is \"generic\".", "1" },
     { "-edgec", "double", "0", "Weight of Edge Count", "The weight of the Local Edge Count objective function. Used when \"-objfuntype\" is \"generic\".", "1" },
     { "-edged", "double", "0", "Weight of Edge Density", "The weight of the Local Edge Density objective function. Used when \"-objfuntype\" is \"generic\".", "1" },
-    { "-esim", "dbl_vec", "0", "External Similarity Weights", "An integer followed by that many weights, specifying objective function weights for external similarity files (must be the same integer as given to -simFile and -simFormat).", "1" },
+    { "-esim", "dbl_vec", "0", "External Similarity Weight", "The weight of the external similarity file. Used when \"-objfuntype\" is \"generic\". (Pending changes to SANA, these values may be normalized to be in [0,1] after they're read but before they're used.)", "1" },
     { "-ewec", "double", "0", "External Weighted Edge Similarity", "The weighted of the external edge similarity file.", "1" },
         { "-graphlet", "double", "0", "Weight of Graphlet Similarity.", "The weight of the Graphlet Objective Function as defined in the original GRAAL paper (2010). Used when \"-objfuntype\" is \"generic\".", "1" },
     { "-graphletlgraal", "double", "0", "Weight of Graphlet Similarity (LGRAAL)", "The weight of LGRAAL's objective function. Used when \"-objfuntype\" is \"generic\".", "1" },
     { "-sequence", "double", "0", "Weight of Sequence Similarity", "The weight of the Sequence Similarity function. Used when \"-objfuntype\" is \"generic\".", "1" },
-        { "-graphletnorm", "double", "0", "similarities between the normalization of 2 GDV vectors", "objective function based on the ratio between vector elements. Used when \"-objfuntype\" is \"generic\".", "1" },
-
     { "-go_k", "double", "0", "k-common GO terms", "Objective function based on having up to k GO terms in common. Used when \"-objfuntype\" is \"generic\".", "1" },
     { "-graphletcosine", "double", "0", "Similarity of cosine between GDV vectors", "Objective function based on the cosine angle between graphlet degree vectors. Used when \"-objfuntype\" is \"generic\".", "1" },
     { "-topomeasure", "string", "", "Topological Measure", "Topological component of the scoring function. Used when \"-objfuntype\" is either \"alpha\" or \"beta\".", "1" },
@@ -138,7 +134,7 @@ vector<array<string, 6>> supportedArguments = {
     { "-wecnodesim", "string", "graphletlgraal", "Weighted Edge Coverage Node Pair Similarity", "Node pair similarity used to weight the edges in the WEC measure. The edges are weighted by taking the average of the scores of an edge's two ending nodes using some node similarity measure which can be different from the default node sim measure.", "1" },
     { "-wavenodesim", "string", "nodec", "Weighted Average Node Pair Similarity", "Node pair similarity to use when emulating WAVE.", "1" },
     { "-maxGraphletSize", "double", "", "Maximum Graphlet Size", "Chooses the maximum size of graphlets to use. Saves human_gdv and yeast_gdv files ending with the given maximum graphlet size in order to distinguish between different-sized graphlets (e.g. human_gdv4.txt and yeast_gdv4.txt, for maximum graphlet size of 4).", "0" },
-    { "-simFile", "str_vec", "0", "External Similarity Filenames", "An integer (same integer as given to -esim and -simFormat) followed by that many filenames, specifying external three-columnn (node from G1, node from  G2, similarity) similarities. The similarities in the 3rd column will be normalized to be in [0,1]. These simFiles will be given weight according to the -esim argument.", "1" },
+    { "-simFile", "str_vec", "0", "Similarity File", "Specify an external three columnn (node from G1, node from  G2, similarity) file. These will be given weight according to the -esim argument.", "1" },
         { "-ewecFile", "string", "", "egdvs file", "egdvs output file produced by GREAT", "1"},
         { "-detailedreport", "bool", "false", "Detailed Report", "If false, initialize only basic measures and any measure necessary to run SANA.", "1" },
     { "End Further Weight Specification. Combine with \"-method x -objfuntype y\"", "", "banner", "", "", "0" },
@@ -198,8 +194,8 @@ vector<array<string, 6>> supportedArguments = {
     //-------------------------------END ANALYSIS----------------------------------------
 
     //---------------------------------SIMILARITY----------------------------------------
-    { "", "", "banner", "", "More options for \"-mode similarity (which exports and saves the internal similarity matrix)\"", "0" },
-    { "-simFormat", "int_vec", "0", "Similarity File Formats", "An integer (must be the same one used by -esim and -simFiles) followed by that many integer simFormats. Allowed values are 2=G1 doubles down by G2 doubles across matrix where node order corresponds to .gw files; 1=node names; 0=node integers numbered as in LEDA .gw format.", "0" },
+    { "", "", "banner", "", "More options for \"-mode similarity\"", "0" },
+    { "-simFormat", "dbl_vec", "0", "Similarity File Format", "Used in Similarity Mode \"-mode similarity\" and with \"-objfuntype -esim\". Allowed values are 2=G1 doubles down by G2 doubles across matrix where node order corresponds to .gw files; 1=node names; 0=node integers numbered as in LEDA .gw format.", "0" },
     { "End More options for \"-mode similarity\"", "", "banner", "", "", "0" },
     //-------------------------------END SIMILARITY--------------------------------------
 
@@ -208,7 +204,6 @@ vector<array<string, 6>> supportedArguments = {
     { "-paretoInitial", "intD", "10", "Initial Pareto Size", "Used in Pareto Mode \"-mode pareto\". This argument specifies the starting number of Alignments in the Pareto Front. All of the starting alignments are the same", "0" },
     { "-paretoCapacity", "intD", "200", "Capacity of Pareto Front", "Used in Pareto Mode \"-mode pareto\". The pareto front can potentially hold N (different scores) by X (possible values/precision of the datatype used (i.e. float or double). Therefore, if a capacity is not specified, after the billions of SANA iterations, there may be too many different alignments stored in memory.", "0" },
     {"-paretoIterations", "intD", "10000", "Iterations per Pareto Insertion", "Used in Pareto Mode \"-mode pareto\". Pareto mode operates on a copy of an alignment (which already exists in the Pareto front). The number of changes and swaps happens -paretoIterations number of times on this copy before attempting to add this new alignment to the Pareto front.", "0"},
-    {"-paretoThreads", "string", "1", "Number of threads to run pareto mode currently.", "0"},
     { "End More options for \"-mode pareto\"", "", "banner", "", "", "0" },
     //--------------------------------END PARETO-----------------------------------------
 
@@ -262,7 +257,7 @@ void validateAndAddArguments(){
 
             else if(supportedArguments[i][1] == "bool")
                 boolArgs.push_back(supportedArguments[i][0]);
-            else if(supportedArguments[i][1] == "dbl_vec" || supportedArguments[i][1] == "int_vec")
+            else if(supportedArguments[i][1] == "dbl_vec")
                 doubleVectorArgs.push_back(supportedArguments[i][0]);
             else if(supportedArguments[i][1] == "str_vec")
                 stringVectorArgs.push_back(supportedArguments[i][0]);
@@ -275,7 +270,8 @@ void validateAndAddArguments(){
     }
 }
 
-void printAllArgumentDescriptions() {
+void printAllArgumentDescriptions()
+{
     ifstream helpOutput;
     helpOutput.open("./src/arguments/helpOutput");
     string line;
