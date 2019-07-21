@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <stdlib.h> 
 
 #include "measureSelector.hpp"
 
@@ -30,6 +31,11 @@
 #include "../measures/localMeasures/Graphlet.hpp"
 #include "../measures/localMeasures/GraphletLGraal.hpp"
 #include "../measures/localMeasures/GraphletCosine.hpp"
+#include "../measures/MatthewsCorrelationCoefficient.hpp"
+#include "../measures/BookmakerInformedness.hpp"
+#include "../measures/Markedness.hpp"
+#include "../measures/FBeta.hpp"
+#include "../measures/FBetaStar.hpp"
 
 using namespace std;
 
@@ -98,7 +104,7 @@ double getAlpha(Graph& G1, Graph& G2, ArgumentParser& args) {
 
 double totalGenericWeight(ArgumentParser& args) {
     vector<string> optimizableDoubleMeasures = {
-        "ec","s3","wacc","ics","tc","sec","wec","nodec","noded","edgec","edged", "go","importance",
+        "ec","s3","wacc","fbeta","fbetastar", "mcc", "bm", "mk","ics","tc","sec","wec","nodec","noded","edgec","edged", "go","importance",
         "sequence","graphlet","graphletlgraal", "graphletcosine", "spc", "nc","mec", "ewec", "ses"
     };
     double total = 0;
@@ -204,15 +210,28 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
     m = new SymmetricSubstructureScore(&G1, &G2);
     M.addMeasure(m, getWeight("s3", G1, G2, args));
     
-//    try{
-        m = new WeightedAccuracy(&G1, &G2);
-        double alpha = getWeight("waccAlpha", G1, G2, args);
-        cout << "alpha " << alpha << endl;
-        ((WeightedAccuracy*)m)->setAlpha(alpha);
-        M.addMeasure(m, getWeight("wacc", G1, G2, args));
-//    }catch(...){
-//        
-//    }
+    double fbetaWeight = getWeight("fbeta", G1, G2, args);
+    double beta = getWeight("b", G1, G2, args);
+    if(fbetaWeight > 0) cout << "beta: " << beta << endl;
+    m = new FBeta(&G1, &G2);
+    ((FBeta*)m)->setBeta(beta);    
+    M.addMeasure(m, fbetaWeight);
+    
+    double waccWeight = getWeight("wacc", G1, G2, args);
+    m = new WeightedAccuracy(&G1, &G2);
+    double alpha = getWeight("waccAlpha", G1, G2, args);
+    if(waccWeight > 0) cout << "alpha " << alpha << endl;
+    ((WeightedAccuracy*)m)->setAlpha(alpha);    
+    M.addMeasure(m, waccWeight);
+    
+    m = new MatthewsCorrelationCoefficient(&G1, &G2);
+    M.addMeasure(m, getWeight("mcc", G1, G2, args));
+    
+    m = new BookmakerInformedness(&G1, &G2);
+    M.addMeasure(m, getWeight("bm", G1, G2, args));
+    
+    m = new Markedness(&G1, &G2);
+    M.addMeasure(m, getWeight("mk", G1, G2, args));
 
     m = new LargestCommonConnectedSubgraph(&G1, &G2);
     M.addMeasure(m);
@@ -333,6 +352,8 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
         m = new WeightedEdgeConservation(&G1, &G2, nodeSim);
         M.addMeasure(m, wecWeight);
     }
+    
+    double fbetastarWeight = getWeight("fbetastar", G1, G2, args);  
 
     if (args.strings["-truealignment"] != "") {
         vector<string> edges = fileToStrings(args.strings["-truealignment"]);
@@ -342,8 +363,15 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
         }
         catch(...){
         }
-        m = new NodeCorrectness(NodeCorrectness::convertAlign(G1, G2, edges));
+        vector<uint> trueA = NodeCorrectness::convertAlign(G1, G2, edges);
+        m = new NodeCorrectness(trueA);
         M.addMeasure(m, ncWeight);
+                   
+        m = new FBetaStar(&G1, &G2);
+        ((FBetaStar*)m)->setBeta(trueA);
+        double betaStar = ((FBetaStar*)m)->getBeta();
+        if(fbetastarWeight > 0) cout << "star_beta: " << betaStar << endl;            
+        M.addMeasure(m, fbetastarWeight);
     } 
     else if (G1.sameNodeNames(G2)) {
         Alignment a(Alignment::correctMapping(G1,G2));
@@ -357,6 +385,18 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
         }    
         m = new NodeCorrectness(mapping);
         M.addMeasure(m, ncWeight);
+                   
+        m = new FBetaStar(&G1, &G2);
+        ((FBetaStar*)m)->setBeta(a);
+        double betaStar = ((FBetaStar*)m)->getBeta();
+        if(fbetastarWeight > 0) cout << "star_beta: " << betaStar << endl;            
+        M.addMeasure(m, fbetastarWeight);
+    }
+    else{
+        if(fbetastarWeight > 0){
+            cerr << "FBetaStar needs true alignment in order to evaluate beta*" << endl;
+            exit(EXIT_FAILURE);
+        }
     }
 
     if (shouldInit("spc", G1, G2, args)) {

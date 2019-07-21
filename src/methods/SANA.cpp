@@ -33,6 +33,8 @@
 #include "../utils/NormalDistribution.hpp"
 #include "../utils/LinearRegression.hpp"
 #include "../utils/utils.hpp"
+#include "../measures/FBeta.hpp"
+#include "../measures/FBetaStar.hpp"
 
 #define FinalPBad 1e-10
 #define InitialPBad 0.985
@@ -171,14 +173,31 @@ SANA::SANA(Graph* G1, Graph* G2,
     this->MC  = MC;
     ecWeight  = MC->getWeight("ec");
     s3Weight  = MC->getWeight("s3");
+    
     icsWeight = MC->getWeight("ics");
     secWeight = MC->getWeight("sec");
     mecWeight = MC->getWeight("mec");
     sesWeight = MC->getWeight("ses");
     
+    mccWeight  = MC->getWeight("mcc");
+    bmWeight  = MC->getWeight("bm");
+    mkWeight  = MC->getWeight("mk");
+    
     waccWeight = MC->getWeight("wacc");
     WeightedAccuracy* wacc = (WeightedAccuracy*)MC->getMeasure("wacc");
     waccAlpha = wacc->getAlpha();
+    if(waccWeight > 0)  cout << "waccAlpha: " << waccAlpha << endl;
+    
+    fbetaWeight  = MC->getWeight("fbeta");
+    FBeta* fbeta = (FBeta*)MC->getMeasure("fbeta");
+    beta = fbeta->getBeta();
+    if(fbetaWeight > 0)  cout << "beta1: " << beta << endl;
+    
+    fbetastarWeight = MC->getWeight("fbetastar");
+    FBetaStar* fbetastar = (FBetaStar*)MC->getMeasure("fbetastar");
+    betaStar = fbetastar->getBeta();
+    if(fbetastarWeight > 0)  cout << "betaStar: " << betaStar << endl;
+    
     try {
         wecWeight = MC->getWeight("wec");
     } catch(...) {
@@ -213,9 +232,9 @@ SANA::SANA(Graph* G1, Graph* G2,
 
     restart              = false; //restart scheme
     dynamic_tdecay       = false; //temperature decay dynamically
-    needAligEdges        = icsWeight > 0 || ecWeight > 0 || waccWeight > 0 || s3Weight > 0 || wecWeight > 0 || secWeight > 0 || mecWeight > 0; //to evaluate EC incrementally
+    needAligEdges        = icsWeight > 0 || fbetastarWeight > 0 || ecWeight > 0 || fbetaWeight > 0 || mccWeight > 0 || bmWeight > 0 || mkWeight > 0 || waccWeight > 0 || s3Weight > 0 || wecWeight > 0 || secWeight > 0 || mecWeight > 0; //to evaluate EC incrementally
     needSquaredAligEdges = sesWeight > 0; // to evaluate SES incrementally
-    needInducedEdges     = s3Weight > 0 || waccWeight > 0 || icsWeight > 0; //to evaluate S3 & ICS incrementally
+    needInducedEdges     = s3Weight > 0 || fbetastarWeight > 0 || fbetaWeight > 0 || mccWeight > 0 || bmWeight > 0 || mkWeight > 0 || waccWeight > 0 || icsWeight > 0; //to evaluate S3 & ICS incrementally
     needWec              = wecWeight > 0; //to evaluate WEC incrementally
     needEwec             = ewecWeight>0; //to evaluate EWEC incrementally
     needSec              = secWeight > 0; //to evaluate SEC incrementally
@@ -1192,6 +1211,10 @@ bool SANA::scoreComparison(double newAligEdges, double newInducedEdges, double n
     bool makeChange = false;
     bool wasBadMove = false;
     double badProbability = 0;
+    
+    double E1 = g1Edges;
+    double Ea = newAligEdges;
+    double Ea_hat = newInducedEdges;
 
     switch (score)
     {
@@ -1206,13 +1229,21 @@ bool SANA::scoreComparison(double newAligEdges, double newInducedEdges, double n
         newCurrentScore += wecWeight * (newWecSum / (2 * g1Edges));
         newCurrentScore += ewecWeight * (newEwecSum);
         newCurrentScore += ncWeight * (newNcSum / trueA.back());
-        if(waccWeight > 0){
-            double E1 = g1Edges;
-            double Ea = newAligEdges;
-            double Ea_hat = newInducedEdges;
+        
+        newCurrentScore += bmWeight * (Ea / Ea_hat - (E1 - Ea) / (omega - Ea_hat));
+        newCurrentScore += mkWeight * (Ea / E1 - (Ea_hat - Ea) / (omega - E1));
+        newCurrentScore += fbetaWeight * (((1 + beta * beta) * Ea) / (E1 + beta * beta * Ea_hat));
+        newCurrentScore += fbetastarWeight * (((1 + betaStar * betaStar) * Ea) / (E1 + betaStar * betaStar * Ea_hat));
+        
+        if(waccWeight > 0){            
             double numerator = 2 * ((waccAlpha + 1) * Ea + omega - (Ea + Ea_hat));
             double denomerator = 2 * omega + (waccAlpha - 1) * (E1 + Ea_hat);
             newCurrentScore += waccWeight * numerator / denomerator;
+        }
+        if(mccWeight > 0){
+            double numerator = omega * Ea - E1 * Ea_hat;
+            double denomerator = sqrt(E1 * Ea_hat * (omega - E1) * (omega - Ea_hat));
+            newCurrentScore += mccWeight * (numerator / denomerator);
         }
 #ifdef WEIGHTED
         newCurrentScore += mecWeight * (newAligEdges / (g1WeightedEdges + g2WeightedEdges));
@@ -1706,6 +1737,10 @@ void SANA::trackProgress(long long int i, bool end) {
         cout << "S3: " << S3.eval(Al) << "  EC: " << EC.eval(Al) << "  ICS: " << ICS.eval(Al) << "  SEC: " << SEC.eval(Al) <<endl;
     }
     if (checkScores) {
+//        double E1 = g1Edges;
+//        double Ea = aligEdges;
+//        double Ea_hat = inducedEdges;
+//        cout <<"E1: "<<E1 << " ,Ea: " << Ea << " ,Ea_hat: "<< Ea_hat<<" ,Omega: " << omega << endl;
         double realScore = eval(Al);
         if (fabs(realScore-currentScore) > 0.000001) {
             cerr << "internal error: incrementally computed score (" << currentScore;

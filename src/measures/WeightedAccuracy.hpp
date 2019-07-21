@@ -25,7 +25,7 @@ public:
     double getAlpha();
     
 private:
-    double alpha = 0;
+    double alpha = 1;
 };
 
 #endif /* WEIGHTEDACCURACY_HPP */

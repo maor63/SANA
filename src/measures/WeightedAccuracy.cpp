@@ -12,6 +12,8 @@
  */
 
 #include "WeightedAccuracy.hpp"
+#include <stdio.h>
+using namespace std;
 
 WeightedAccuracy::WeightedAccuracy(Graph* G1, Graph* G2): Measure(G1, G2, "wacc") {
 }
@@ -35,6 +37,7 @@ double WeightedAccuracy::eval(const Alignment& A) {
     double omega = E1 * (E1-1) / 2.0;
     double numerator = 2 * ((alpha + 1) * Ea + omega - (Ea + Ea_hat));
     double denomerator = 2 * omega + (alpha - 1) * (E1 + Ea_hat);
+//    cout <<"E1: "<<E1 << " ,Ea: " << Ea << " ,Ea_hat: "<< Ea_hat<<" ,Omega: " << omega << endl;
     return numerator / denomerator;
 }
 

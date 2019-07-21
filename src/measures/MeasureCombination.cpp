@@ -20,6 +20,7 @@ double MeasureCombination::eval(const Alignment& A) const {
     double total = 0;
     for (uint i = 0; i < n; i++) {
         if (weights[i] > 0) {
+//            cout << "measure: " <<  measures[i]->getName() << " ,weight: " << weights[i]<<endl; 
             total += measures[i]->eval(A) * weights[i];
         }
     }

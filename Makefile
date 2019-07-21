@@ -31,11 +31,11 @@ ARGUMENTS_SRC = 							\
 
 MEASURES_SRCS = 							\
 	src/measures/EdgeCorrectness.cpp 				\
-	src/measures/TriangleCorrectness.cpp			\
+	src/measures/TriangleCorrectness.cpp				\
 	src/measures/MultiEdgeCorrectness.cpp 				\
         src/measures/ExternalWeightedEdgeConservation.cpp               \
 	src/measures/GoAverage.cpp      				\
-	src/measures/NetGO.cpp      				\
+	src/measures/NetGO.cpp						\
 	src/measures/InducedConservedStructure.cpp			\
 	src/measures/InvalidMeasure.cpp             			\
 	src/measures/LargestCommonConnectedSubgraph.cpp			\
@@ -45,6 +45,11 @@ MEASURES_SRCS = 							\
 	src/measures/ShortestPathConservation.cpp 			\
 	src/measures/SymmetricSubstructureScore.cpp 			\
 	src/measures/WeightedAccuracy.cpp				\
+	src/measures/FBeta.cpp						\
+	src/measures/FBetaStar.cpp					\
+	src/measures/MatthewsCorrelationCoefficient.cpp			\
+	src/measures/BookmakerInformedness.cpp				\
+	src/measures/Markedness.cpp					\
         src/measures/SymmetricEdgeCoverage.cpp 				\
         src/measures/SquaredEdgeScore.cpp 				\
 	src/measures/WeightedEdgeConservation.cpp 			\
