@@ -105,6 +105,7 @@ vector<array<string, 6>> supportedArguments = {
     { "-s3", "double", "1", "Weight of S3", "The weight of the Symmetric Substructer Score in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-fbeta", "double", "0", "Weight of FBeta", "The weight of the FBeta in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-fbetastar", "double", "0", "Weight of FBetaStar", "The weight of the FBetaStar in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
+    { "-fbetahash", "double", "0", "Weight of FBetaHash", "The weight of the FBetaHash in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-wacc", "double", "0", "Weight of WAcc", "The weight of the Weighted Accuracy in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-mcc", "double", "0", "Weight of MCC", "The weight of the Weighted Accuracy in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-bm", "double", "0", "Weight of BM", "The weight of the Weighted Accuracy in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },

@@ -97,6 +97,7 @@ private:
     double waccAlpha;
     double beta;
     double betaStar;
+    double betaHash;
 #ifdef WEIGHTED
     double g1WeightedEdges;
     double g2WeightedEdges;
@@ -183,6 +184,7 @@ private:
     double waccWeight;
     double fbetaWeight;
     double fbetastarWeight;
+    double fBetaHashWeight;
     double mccWeight;
     double bmWeight;
     double mkWeight;

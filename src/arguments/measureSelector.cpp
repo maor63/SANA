@@ -36,6 +36,7 @@
 #include "../measures/Markedness.hpp"
 #include "../measures/FBeta.hpp"
 #include "../measures/FBetaStar.hpp"
+#include "../measures/FBetaHash.hpp"
 
 using namespace std;
 
@@ -104,7 +105,7 @@ double getAlpha(Graph& G1, Graph& G2, ArgumentParser& args) {
 
 double totalGenericWeight(ArgumentParser& args) {
     vector<string> optimizableDoubleMeasures = {
-        "ec","s3","wacc","fbeta","fbetastar", "mcc", "bm", "mk","ics","tc","sec","wec","nodec","noded","edgec","edged", "go","importance",
+        "ec","s3","wacc","fbeta","fbetastar","fbetahash", "mcc", "bm", "mk","ics","tc","sec","wec","nodec","noded","edgec","edged", "go","importance",
         "sequence","graphlet","graphletlgraal", "graphletcosine", "spc", "nc","mec", "ewec", "ses"
     };
     double total = 0;
@@ -216,7 +217,11 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
     m = new FBeta(&G1, &G2);
     ((FBeta*)m)->setBeta(beta);    
     M.addMeasure(m, fbetaWeight);
-    
+        
+    m = new FBetaHash(&G1, &G2);
+    M.addMeasure(m, getWeight("fbetahash", G1, G2, args));
+    cout << "name: " << m->getName() << endl;
+        
     double waccWeight = getWeight("wacc", G1, G2, args);
     m = new WeightedAccuracy(&G1, &G2);
     double alpha = getWeight("waccAlpha", G1, G2, args);
