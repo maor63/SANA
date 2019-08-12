@@ -82,7 +82,7 @@ SANA::SANA(Graph* G1, Graph* G2,
     n2              = G2->getNumNodes();
     g1Edges         = G1->getNumEdges();
     
-    omega = g1Edges * (g1Edges - 1) / 2.0;
+    omega = n1 * (n1 - 1) / 2.0;
 #ifdef WEIGHTED
     g1WeightedEdges = G1->getWeightedNumEdges();
     g2WeightedEdges = G2->getWeightedNumEdges();

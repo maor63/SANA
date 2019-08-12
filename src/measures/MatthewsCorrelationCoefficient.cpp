@@ -24,9 +24,10 @@ MatthewsCorrelationCoefficient::~MatthewsCorrelationCoefficient() {
 double MatthewsCorrelationCoefficient::eval(const Alignment& A) {
     double Ea = A.numAlignedEdges(*G1, *G2);
     double E1 = G1->getNumEdges();
-    
+    double V1 = G1->getNumNodes();
+    double omega = V1 * (V1-1) / 2.0;    
     double Ea_hat = G2->numNodeInducedSubgraphEdges(A.getMapping());
-    double omega = E1 * (E1-1) / 2.0;
+    
     double numerator = omega * Ea - E1 * Ea_hat;
     double denomerator = sqrt(E1 * Ea_hat * (omega - E1) * (omega - Ea_hat));
     return numerator / denomerator;

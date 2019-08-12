@@ -21,10 +21,10 @@ Markedness::~Markedness() {
 
 double Markedness::eval(const Alignment& A) {
     double Ea = A.numAlignedEdges(*G1, *G2);
-    double E1 = G1->getNumEdges();
-    
+    double E1 = G1->getNumEdges();    
     double Ea_hat = G2->numNodeInducedSubgraphEdges(A.getMapping());
-    double omega = E1 * (E1-1) / 2.0;
+    double V1 = G1->getNumNodes();
+    double omega = V1 * (V1-1) / 2.0;
     return Ea / E1 - (Ea_hat - Ea) / (omega - E1);
 }
 

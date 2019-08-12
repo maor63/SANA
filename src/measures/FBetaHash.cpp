@@ -16,7 +16,8 @@
 
 FBetaHash::FBetaHash(Graph* G1, Graph* G2): FBeta(G1, G2, "fbetahash") {
     double E1 = G1->getNumEdges();
-    double omega = E1 * (E1-1) / 2.0;    
+    double V1 = G1->getNumNodes();
+    double omega = V1 * (V1-1) / 2.0;    
     FBeta::setBeta(sqrt(E1 / (omega - E1)));
 }
 
