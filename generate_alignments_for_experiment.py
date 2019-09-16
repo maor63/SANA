@@ -518,6 +518,8 @@ def write_grapha_and_true_alignment(G1_add, G1_add_name, output_path):
 
 def generate_graphs_for_beta_experiments():
     output_path = 'roni_test_graphs_and_data/'
+    if not os.path.isdir(output_path):
+        os.makedirs(output_path)
     nodes_to_delete = 100
     # np.arange(0.140, 0.162, 0.002)
     g2_names = set()
@@ -532,10 +534,11 @@ def generate_graphs_for_beta_experiments():
             g2_dens = nx.density(nx.read_leda(input_g2_file))
             print(g2_dens)
             # G2_base_name = G2_name.split('_')[0]
-            k = int(V2 * (V2 - 1) / 2 * target_dense) - len(G2.edges)
+            #k = int(V2 * (V2 - 1) / 2 * target_dense) - len(G2.edges)
             # # G2 = add_random_edges(G2, k)
-            G2 = remove_random_edges(G2, -k)
-            G2_base = '{0}_dens_{1:.4f}'.format(G2_name, nx.density(G2))
+            #G2 = remove_random_edges(G2, -k)
+            #G2_base = '{0}_dens_{1:.4f}'.format(G2_name, nx.density(G2))
+            G2_base = G2_name
             g2_names.add(G2_base)
             write_leda_to_file(G2, G2_base, os.path.join(output_path, '{0}/'.format(G2_base)))
             G_name_template = '{}_node_del_{}_{}_edges_{}_iter_{}'
