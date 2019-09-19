@@ -1243,7 +1243,7 @@ bool SANA::scoreComparison(double newAligEdges, double newInducedEdges, double n
         newCurrentScore += fbetaWeight * (((1 + beta * beta) * Ea) / (E1 + beta * beta * Ea_hat));
         newCurrentScore += fbetastarWeight * (((1 + betaStar * betaStar) * Ea) / (E1 + betaStar * betaStar * Ea_hat));
         newCurrentScore += fBetaHashWeight * (((1 + betaHash * betaHash) * Ea) / (E1 + betaHash * betaHash * Ea_hat));
-        newCurrentScore += iliaWeight * ((TP / E1) + (TN / (omega - E1))) ;
+        newCurrentScore += iliaWeight * ((TP / E1) + (TN / (omega - E1))) / 2.0;
         
         if(waccWeight > 0){            
             double numerator = 2 * ((waccAlpha + 1) * Ea + omega - (E1 + Ea_hat));

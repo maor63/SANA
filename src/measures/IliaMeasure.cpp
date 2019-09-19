@@ -30,5 +30,5 @@ double IliaMeasure::eval(const Alignment& A) {
     
     double positive_part = TP / E1;
     double negative_part = TN / (omega - E1);
-    return positive_part + negative_part;
+    return (positive_part + negative_part) / 2.0;
 }
