@@ -183,6 +183,7 @@ SANA::SANA(Graph* G1, Graph* G2,
     mccWeight  = MC->getWeight("mcc");
     bmWeight  = MC->getWeight("bm");
     mkWeight  = MC->getWeight("mk");
+    iliaWeight  = MC->getWeight("ilia");
     
     waccWeight = MC->getWeight("wacc");
     WeightedAccuracy* wacc = (WeightedAccuracy*)MC->getMeasure("wacc");
@@ -237,9 +238,9 @@ SANA::SANA(Graph* G1, Graph* G2,
 
     restart              = false; //restart scheme
     dynamic_tdecay       = false; //temperature decay dynamically
-    needAligEdges        = icsWeight > 0 || fBetaHashWeight > 0 || fbetastarWeight > 0 || ecWeight > 0 || fbetaWeight > 0 || mccWeight > 0 || bmWeight > 0 || mkWeight > 0 || waccWeight > 0 || s3Weight > 0 || wecWeight > 0 || secWeight > 0 || mecWeight > 0; //to evaluate EC incrementally
+    needAligEdges        = icsWeight > 0 || fBetaHashWeight > 0 || fbetastarWeight > 0 || ecWeight > 0 || iliaWeight > 0 || fbetaWeight > 0 || mccWeight > 0 || bmWeight > 0 || mkWeight > 0 || waccWeight > 0 || s3Weight > 0 || wecWeight > 0 || secWeight > 0 || mecWeight > 0; //to evaluate EC incrementally
     needSquaredAligEdges = sesWeight > 0; // to evaluate SES incrementally
-    needInducedEdges     = s3Weight > 0 || fBetaHashWeight > 0 || fbetastarWeight > 0 || fbetaWeight > 0 || mccWeight > 0 || bmWeight > 0 || mkWeight > 0 || waccWeight > 0 || icsWeight > 0; //to evaluate S3 & ICS incrementally
+    needInducedEdges     = s3Weight > 0 || fBetaHashWeight > 0 || fbetastarWeight > 0 || fbetaWeight > 0 || iliaWeight > 0 || mccWeight > 0 || bmWeight > 0 || mkWeight > 0 || waccWeight > 0 || icsWeight > 0; //to evaluate S3 & ICS incrementally
     needWec              = wecWeight > 0; //to evaluate WEC incrementally
     needEwec             = ewecWeight>0; //to evaluate EWEC incrementally
     needSec              = secWeight > 0; //to evaluate SEC incrementally
@@ -1220,6 +1221,8 @@ bool SANA::scoreComparison(double newAligEdges, double newInducedEdges, double n
     double E1 = g1Edges;
     double Ea = newAligEdges;
     double Ea_hat = newInducedEdges;
+    double TP = Ea;
+    double TN = omega - (E1 + Ea_hat - Ea);
 
     switch (score)
     {
@@ -1240,6 +1243,7 @@ bool SANA::scoreComparison(double newAligEdges, double newInducedEdges, double n
         newCurrentScore += fbetaWeight * (((1 + beta * beta) * Ea) / (E1 + beta * beta * Ea_hat));
         newCurrentScore += fbetastarWeight * (((1 + betaStar * betaStar) * Ea) / (E1 + betaStar * betaStar * Ea_hat));
         newCurrentScore += fBetaHashWeight * (((1 + betaHash * betaHash) * Ea) / (E1 + betaHash * betaHash * Ea_hat));
+        newCurrentScore += iliaWeight * ((TP / E1) + (TN / (omega - E1))) ;
         
         if(waccWeight > 0){            
             double numerator = 2 * ((waccAlpha + 1) * Ea + omega - (E1 + Ea_hat));

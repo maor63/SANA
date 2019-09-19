@@ -188,6 +188,7 @@ private:
     double mccWeight;
     double bmWeight;
     double mkWeight;
+    double iliaWeight;
     double icsWeight;
     double wecWeight;
     double secWeight;

@@ -37,6 +37,7 @@
 #include "../measures/FBeta.hpp"
 #include "../measures/FBetaStar.hpp"
 #include "../measures/FBetaHash.hpp"
+#include "../measures/IliaMeasure.hpp"
 
 using namespace std;
 
@@ -105,7 +106,7 @@ double getAlpha(Graph& G1, Graph& G2, ArgumentParser& args) {
 
 double totalGenericWeight(ArgumentParser& args) {
     vector<string> optimizableDoubleMeasures = {
-        "ec","s3","wacc","fbeta","fbetastar","fbetahash", "mcc", "bm", "mk","ics","tc","sec","wec","nodec","noded","edgec","edged", "go","importance",
+        "ec","s3", "ilia","wacc","fbeta","fbetastar","fbetahash", "mcc", "bm", "mk","ics","tc","sec","wec","nodec","noded","edgec","edged", "go","importance",
         "sequence","graphlet","graphletlgraal", "graphletcosine", "spc", "nc","mec", "ewec", "ses"
     };
     double total = 0;
@@ -240,6 +241,9 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
 
     m = new LargestCommonConnectedSubgraph(&G1, &G2);
     M.addMeasure(m);
+        
+    m = new IliaMeasure(&G1, &G2);
+    M.addMeasure(m, getWeight("ilia", G1, G2, args));
 
     m = new SymmetricEdgeCoverage(&G1, &G2);
     M.addMeasure(m, getWeight("sec", G1, G2, args));

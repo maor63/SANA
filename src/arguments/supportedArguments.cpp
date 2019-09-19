@@ -110,6 +110,7 @@ vector<array<string, 6>> supportedArguments = {
     { "-mcc", "double", "0", "Weight of MCC", "The weight of the Weighted Accuracy in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-bm", "double", "0", "Weight of BM", "The weight of the Weighted Accuracy in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-mk", "double", "0", "Weight of MK", "The weight of the Weighted Accuracy in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
+    { "-ilia", "double", "0", "Weight of LiliaMeasure", "The weight of the IliaMeasure in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-nc", "double", "0", "Weight of NC", "This weight of Node Correctness in the objective function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-tc", "double", "0", "Weight of TC", "The weight of Triangle Correctness in the objetive function. To be used when \"-objfuntype\" is \"generic\".", "1" },
     { "-wec", "double", "0", "Weight of WEC.", "Weight of the weighted edge coverage. To be used when \"-objfuntype\" is \"generic\". If non-zero, must specify how to weigh the edge using -wecnodesim.", "1" },

@@ -45,6 +45,7 @@ MEASURES_SRCS = 							\
 	src/measures/ShortestPathConservation.cpp 			\
 	src/measures/SymmetricSubstructureScore.cpp 			\
 	src/measures/WeightedAccuracy.cpp				\
+	src/measures/IliaMeasure.cpp					\
 	src/measures/FBeta.cpp						\
 	src/measures/FBetaStar.cpp					\
 	src/measures/FBetaHash.cpp					\
