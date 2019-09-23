@@ -36,6 +36,7 @@
 #include "../measures/FBeta.hpp"
 #include "../measures/FBetaStar.hpp"
 #include "../measures/FBetaHash.hpp"
+#include "../measures/FBetaHashPow.hpp"
 
 #define FinalPBad 1e-10
 #define InitialPBad 0.985
@@ -204,6 +205,10 @@ SANA::SANA(Graph* G1, Graph* G2,
     fBetaHashWeight = MC->getWeight("fbetahash");
     if(fBetaHashWeight > 0)  cout << "betaHash: " << betaHash << endl;
     
+    betaHashPow = ((FBetaHashPow*)MC->getMeasure("fbetahashpow"))->getBeta();
+    fBetaHashPowWeight = MC->getWeight("fbetahashpow");
+    if(fBetaHashPowWeight > 0)  cout << "betaHashPow: " << betaHashPow << endl;
+    
     try {
         wecWeight = MC->getWeight("wec");
     } catch(...) {
@@ -238,9 +243,9 @@ SANA::SANA(Graph* G1, Graph* G2,
 
     restart              = false; //restart scheme
     dynamic_tdecay       = false; //temperature decay dynamically
-    needAligEdges        = icsWeight > 0 || fBetaHashWeight > 0 || fbetastarWeight > 0 || ecWeight > 0 || iliaWeight > 0 || fbetaWeight > 0 || mccWeight > 0 || bmWeight > 0 || mkWeight > 0 || waccWeight > 0 || s3Weight > 0 || wecWeight > 0 || secWeight > 0 || mecWeight > 0; //to evaluate EC incrementally
+    needAligEdges        = icsWeight > 0 || fBetaHashPowWeight > 0 || fBetaHashWeight > 0 || fbetastarWeight > 0 || ecWeight > 0 || iliaWeight > 0 || fbetaWeight > 0 || mccWeight > 0 || bmWeight > 0 || mkWeight > 0 || waccWeight > 0 || s3Weight > 0 || wecWeight > 0 || secWeight > 0 || mecWeight > 0; //to evaluate EC incrementally
     needSquaredAligEdges = sesWeight > 0; // to evaluate SES incrementally
-    needInducedEdges     = s3Weight > 0 || fBetaHashWeight > 0 || fbetastarWeight > 0 || fbetaWeight > 0 || iliaWeight > 0 || mccWeight > 0 || bmWeight > 0 || mkWeight > 0 || waccWeight > 0 || icsWeight > 0; //to evaluate S3 & ICS incrementally
+    needInducedEdges     = s3Weight > 0 || fBetaHashPowWeight > 0 || fBetaHashWeight > 0 || fbetastarWeight > 0 || fbetaWeight > 0 || iliaWeight > 0 || mccWeight > 0 || bmWeight > 0 || mkWeight > 0 || waccWeight > 0 || icsWeight > 0; //to evaluate S3 & ICS incrementally
     needWec              = wecWeight > 0; //to evaluate WEC incrementally
     needEwec             = ewecWeight>0; //to evaluate EWEC incrementally
     needSec              = secWeight > 0; //to evaluate SEC incrementally
@@ -1243,6 +1248,7 @@ bool SANA::scoreComparison(double newAligEdges, double newInducedEdges, double n
         newCurrentScore += fbetaWeight * (((1 + beta * beta) * Ea) / (E1 + beta * beta * Ea_hat));
         newCurrentScore += fbetastarWeight * (((1 + betaStar * betaStar) * Ea) / (E1 + betaStar * betaStar * Ea_hat));
         newCurrentScore += fBetaHashWeight * (((1 + betaHash * betaHash) * Ea) / (E1 + betaHash * betaHash * Ea_hat));
+        newCurrentScore += fBetaHashPowWeight * (((1 + betaHashPow * betaHashPow) * Ea) / (E1 + betaHashPow * betaHashPow * Ea_hat));
         newCurrentScore += iliaWeight * ((TP / E1) + (TN / (omega - E1))) / 2.0;
         
         if(waccWeight > 0){            

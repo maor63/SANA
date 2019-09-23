@@ -49,6 +49,7 @@ MEASURES_SRCS = 							\
 	src/measures/FBeta.cpp						\
 	src/measures/FBetaStar.cpp					\
 	src/measures/FBetaHash.cpp					\
+	src/measures/FBetaHashPow.cpp					\
 	src/measures/MatthewsCorrelationCoefficient.cpp			\
 	src/measures/BookmakerInformedness.cpp				\
 	src/measures/Markedness.cpp					\
