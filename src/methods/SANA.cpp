@@ -186,6 +186,8 @@ SANA::SANA(Graph* G1, Graph* G2,
     mkWeight  = MC->getWeight("mk");
     iliaWeight  = MC->getWeight("ilia");
     
+    
+    
     waccWeight = MC->getWeight("wacc");
     WeightedAccuracy* wacc = (WeightedAccuracy*)MC->getMeasure("wacc");
     waccAlpha = wacc->getAlpha();
@@ -194,16 +196,21 @@ SANA::SANA(Graph* G1, Graph* G2,
     fbetaWeight  = MC->getWeight("fbeta");
     FBeta* fbeta = (FBeta*)MC->getMeasure("fbeta");
     beta = fbeta->getBeta();
-    if(fbetaWeight > 0)  cout << "beta1: " << beta << endl;
+    if(fbetaWeight > 0)  cout << "beta1: " << beta << endl;    
     
-    fbetastarWeight = MC->getWeight("fbetastar");
-    FBetaStar* fbetastar = (FBetaStar*)MC->getMeasure("fbetastar");
-    betaStar = fbetastar->getBeta();
-    if(fbetastarWeight > 0)  cout << "betaStar: " << betaStar << endl;
+    try {
+        fbetastarWeight = MC->getWeight("fbetastar");
+        FBetaStar* fbetastar = (FBetaStar*)MC->getMeasure("fbetastar");
+        betaStar = fbetastar->getBeta();
+        if(fbetastarWeight > 0)  cout << "betaStar: " << betaStar << endl;
+        } 
+    catch(...) {
+        fbetastarWeight = 0;
+    }
     
     betaHash = ((FBetaHash*)MC->getMeasure("fbetahash"))->getBeta();
     fBetaHashWeight = MC->getWeight("fbetahash");
-    if(fBetaHashWeight > 0)  cout << "betaHash: " << betaHash << endl;
+    if(fBetaHashWeight > 0)  cout << "betaHash: " << betaHash << endl;  
     
     betaHashPow = ((FBetaHashPow*)MC->getMeasure("fbetahashpow"))->getBeta();
     fBetaHashPowWeight = MC->getWeight("fbetahashpow");

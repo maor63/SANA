@@ -376,15 +376,17 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
         }
         catch(...){
         }
-        vector<uint> trueA = NodeCorrectness::convertAlign(G1, G2, edges);
+        vector<uint> trueA = NodeCorrectness::convertAlign(G1, G2, edges);        
         m = new NodeCorrectness(trueA);
         M.addMeasure(m, ncWeight);
-                   
-        m = new FBetaStar(&G1, &G2);
-        ((FBetaStar*)m)->setBeta(trueA);
-        double betaStar = ((FBetaStar*)m)->getBeta();
-        if(fbetastarWeight > 0) cout << "star_beta: " << betaStar << endl;            
-        M.addMeasure(m, fbetastarWeight);
+        
+        
+//        m = new FBetaStar(&G1, &G2);
+//        ((FBetaStar*)m)->setBetaA(trueA);
+//        double betaStar = ((FBetaStar*)m)->getBeta();
+//        if(fbetastarWeight > 0) cout << "star_beta: " << betaStar << endl;            
+//        M.addMeasure(m, fbetastarWeight);
+        
     } 
     else if (G1.sameNodeNames(G2)) {
         Alignment a(Alignment::correctMapping(G1,G2));
@@ -400,7 +402,7 @@ void initMeasures(MeasureCombination& M, Graph& G1, Graph& G2, ArgumentParser& a
         M.addMeasure(m, ncWeight);
                    
         m = new FBetaStar(&G1, &G2);
-        ((FBetaStar*)m)->setBeta(a);
+        ((FBetaStar*)m)->setBetaA(a);
         double betaStar = ((FBetaStar*)m)->getBeta();
         if(fbetastarWeight > 0) cout << "star_beta: " << betaStar << endl;            
         M.addMeasure(m, fbetastarWeight);

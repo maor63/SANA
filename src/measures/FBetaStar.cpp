@@ -20,8 +20,9 @@ FBetaStar::FBetaStar(Graph* G1, Graph* G2): FBeta(G1, G2, "fbetastar") {
 FBetaStar::~FBetaStar() {
 }
 
-void FBetaStar::setBeta(Alignment trueA){
+void FBetaStar::setBetaA(Alignment trueA){
     double E1 = G1->getNumEdges();    
-    double Ea_hat = G2->numNodeInducedSubgraphEdges(trueA.getMapping());
+    double Ea_hat = G2->numNodeInducedSubgraphEdges(trueA.getMapping());    
     FBeta::setBeta(sqrt(E1 / Ea_hat));
+    
 }

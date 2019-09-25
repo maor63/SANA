@@ -21,7 +21,7 @@ public:
     FBeta(Graph* G1, Graph* G2, string name);    
     virtual ~FBeta();
     double eval(const Alignment& A);
-    virtual void setBeta(double beta);
+    void setBeta(double beta);
     virtual double getBeta();
 private:
     double beta = 1;

@@ -19,7 +19,7 @@ class FBetaStar: public FBeta {
 public:
     FBetaStar(Graph* G1, Graph* G2);
     virtual ~FBetaStar();
-    void setBeta(Alignment trueA);
+    void setBetaA(Alignment trueA);
 private:
 
 };
